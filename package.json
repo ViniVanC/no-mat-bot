@@ -3,5 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "author": "ViniVanC",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "node-telegram-bot-api": "^0.63.0"
+  }
 }
