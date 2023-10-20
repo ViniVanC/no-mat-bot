@@ -5,7 +5,9 @@
   "author": "ViniVanC",
   "license": "MIT",
   "dependencies": {
+    "json-db": "^0.0.2",
     "mongoose": "^7.6.3",
+    "node-json-db": "^2.3.0",
     "node-telegram-bot-api": "^0.63.0"
   }
 }
