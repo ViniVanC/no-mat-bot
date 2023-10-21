@@ -69,7 +69,7 @@ bot.onText(/\/get_curse_count/, (msg) => {
   const chatId = msg.chat.id;
 
   // Відправляємо початкове повідомлення "Почекайте..."
-  bot.sendMessage(chatId, "Почекайте, поки прийде відповідь від сервера...");
+  // bot.sendMessage(chatId, "Почекайте, поки прийде відповідь від сервера...");
 
   // Отримання лічильника матюків користувача з MockAPI за `userId`
   getUserCurseCount(chatId)
@@ -85,7 +85,7 @@ bot.onText(/\/get_all_users_curse_count/, (msg) => {
   const chatId = msg.chat.id;
 
   // Відправляємо початкове повідомлення "Почекайте..."
-  bot.sendMessage(chatId, "Почекайте, поки прийде відповідь від сервера...");
+  // bot.sendMessage(chatId, "Почекайте, поки прийде відповідь від сервера...");
 
   // Отримання кількості матюків усіх користувачів з MockAPI
   getAllUsersCurseCount()
@@ -146,6 +146,7 @@ function getUserCurseCount(userId) {
     .then((response) => response.data[0].curseCount);
 }
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log("Сервер запущено!");
+const PORT = process.env.PORT; // Змініть порт на інший, якщо потрібно
+app.listen(PORT, () => {
+  console.log(`Сервер працює на порті ${PORT}`);
 });
