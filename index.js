@@ -11,12 +11,20 @@ bot.onText(/\/start/, (msg) => {
   const username = msg.from.username; // Отримання тегу користувача (username)
   const firstName = msg.from.first_name; // Отримання імені користувача (first name)
 
-  bot.sendMessage(chatId, "Ласкаво просимо! Виберіть дію:", {
-    reply_markup: {
-      keyboard: [["+1"], ["/get_curse_count"], ["/get_all_users_curse_count"]],
-      one_time_keyboard: true,
-    },
-  });
+  bot.sendMessage(
+    chatId,
+    `Привіт ${msg.from.first_name}, я безіменний бот мета якого контролювати кількість матів що ти кажеш. Кожного разу коли ти кажеш мат, будь ласка, натскай кнопку +1. Сподіваюсь ми зрозуміли одне одного. А тепер вибери дію:`,
+    {
+      reply_markup: {
+        keyboard: [
+          ["+1"],
+          ["/get_curse_count"],
+          ["/get_all_users_curse_count"],
+        ],
+        // one_time_keyboard: true,
+      },
+    }
+  );
 
   // Перевірка наявності користувача на MockAPI за `userId`
   checkUserExists(chatId)
@@ -47,6 +55,9 @@ bot.onText(/\+1/, (msg) => {
 bot.onText(/\/get_curse_count/, (msg) => {
   const chatId = msg.chat.id;
 
+  // Відправляємо початкове повідомлення "Почекайте..."
+  bot.sendMessage(chatId, "Почекайте, поки прийде відповідь від сервера...");
+
   // Отримання лічильника матюків користувача з MockAPI за `userId`
   getUserCurseCount(chatId)
     .then((curseCount) => {
@@ -59,6 +70,9 @@ bot.onText(/\/get_curse_count/, (msg) => {
 
 bot.onText(/\/get_all_users_curse_count/, (msg) => {
   const chatId = msg.chat.id;
+
+  // Відправляємо початкове повідомлення "Почекайте..."
+  bot.sendMessage(chatId, "Почекайте, поки прийде відповідь від сервера...");
 
   // Отримання кількості матюків усіх користувачів з MockAPI
   getAllUsersCurseCount()
