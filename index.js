@@ -1,71 +1,127 @@
 const TelegramBot = require("node-telegram-bot-api");
-const fs = require("fs");
-const token = "6362622832:AAHscQAoWavxQR2fN098Piaolsyj6B-hYQQ";
+const axios = require("axios");
 
-const dataFilePath = "user_data.json";
+const token = "6362622832:AAHscQAoWavxQR2fN098Piaolsyj6B-hYQQ";
+const mockApiUrl = "https://65338d61d80bd20280f69256.mockapi.io/users"; // Вставте URL свого MockAPI
+
 const bot = new TelegramBot(token, { polling: true });
 
-let userData = {};
-
-if (fs.existsSync(dataFilePath)) {
-  const data = fs.readFileSync(dataFilePath, "utf-8");
-  userData = JSON.parse(data);
-}
-
-function saveDataToFile() {
-  fs.writeFileSync(dataFilePath, JSON.stringify(userData, null, 2), "utf-8");
-}
-
 bot.onText(/\/start/, (msg) => {
-  const chatId = msg.chat.id;
+  const chatId = msg.from.id; // Отримання ідентифікатора користувача (user ID)
+  const username = msg.from.username; // Отримання тегу користувача (username)
+  const firstName = msg.from.first_name; // Отримання імені користувача (first name)
+
   bot.sendMessage(chatId, "Ласкаво просимо! Виберіть дію:", {
     reply_markup: {
-      keyboard: [["+1"], ["/get_curse_count"], ["/get_total_curse_count"]],
+      keyboard: [["+1"], ["/get_curse_count"], ["/get_all_users_curse_count"]],
       one_time_keyboard: true,
     },
   });
 
-  if (!userData[chatId]) {
-    userData[chatId] = { curseCount: 0 };
-    saveDataToFile();
-  }
+  // Перевірка наявності користувача на MockAPI за `userId`
+  checkUserExists(chatId)
+    .then((userExists) => {
+      if (!userExists) {
+        // Якщо користувача не існує, додамо його на MockAPI
+        addUserToMockAPI(chatId, username, firstName);
+      }
+    })
+    .catch((error) => {
+      console.error("Помилка перевірки користувача:", error);
+    });
 });
 
 bot.onText(/\+1/, (msg) => {
   const chatId = msg.chat.id;
 
-  if (userData[chatId]) {
-    userData[chatId].curseCount++;
-    saveDataToFile();
-    bot.sendMessage(
-      chatId,
-      `Загальна кількість матюків: ${userData[chatId].curseCount}`
-    );
-  }
+  // Збільшення лічильника матюків користувача на MockAPI за `userId`
+  incrementUserCurseCount(chatId)
+    .then((curseCount) => {
+      bot.sendMessage(chatId, `Загальна кількість матюків: ${curseCount}`);
+    })
+    .catch((error) => {
+      console.error("Помилка збільшення лічильника матюків:", error);
+    });
 });
 
 bot.onText(/\/get_curse_count/, (msg) => {
   const chatId = msg.chat.id;
 
-  if (userData[chatId]) {
-    bot.sendMessage(
-      chatId,
-      `Загальна кількість матюків: ${userData[chatId].curseCount}`
-    );
-  }
+  // Отримання лічильника матюків користувача з MockAPI за `userId`
+  getUserCurseCount(chatId)
+    .then((curseCount) => {
+      bot.sendMessage(chatId, `Загальна кількість матюків: ${curseCount}`);
+    })
+    .catch((error) => {
+      console.error("Помилка отримання лічильника матюків:", error);
+    });
 });
-bot.onText(/\/get_total_curse_count/, (msg) => {
+
+bot.onText(/\/get_all_users_curse_count/, (msg) => {
   const chatId = msg.chat.id;
 
-  const userCurseCounts = Object.entries(userData).map(([userId, user]) => ({
-    userId,
-    curseCount: user.curseCount,
-  }));
-
-  let message = "Загальна кількість матюків користувачів:\n";
-  userCurseCounts.forEach(({ userId, curseCount }) => {
-    message += `Користувач ID ${userId}: ${curseCount}\n`;
-  });
-
-  bot.sendMessage(chatId, message);
+  // Отримання кількості матюків усіх користувачів з MockAPI
+  getAllUsersCurseCount()
+    .then((users) => {
+      if (users.length === 0) {
+        bot.sendMessage(chatId, "Наразі немає жодного користувача.");
+      } else {
+        const responseText = users
+          .map((user) => {
+            return `Користувач \*${user.firstName}\* має ${user.curseCount} матюків.`;
+          })
+          .join("\n");
+        bot.sendMessage(chatId, responseText, { parse_mode: "Markdown" });
+      }
+    })
+    .catch((error) => {
+      console.error("Помилка отримання кількості матюків користувачів:", error);
+    });
 });
+
+// Функція для отримання кількості матюків усіх користувачів на MockAPI
+function getAllUsersCurseCount() {
+  return axios.get(mockApiUrl).then((response) => {
+    const users = response.data;
+    return users;
+  });
+}
+
+function checkUserExists(userId) {
+  return axios
+    .get(`${mockApiUrl}?userId=${userId}`)
+    .then((response) => response.data.length > 0)
+    .catch(() => false);
+}
+
+function addUserToMockAPI(userId, username, firstName) {
+  return axios.post(mockApiUrl, {
+    userId,
+    username: username,
+    firstName: firstName,
+    curseCount: 0,
+  });
+}
+
+function incrementUserCurseCount(userId) {
+  return axios.get(`${mockApiUrl}?userId=${userId}`).then((response) => {
+    const userData = response.data[0];
+    userData.curseCount++;
+    return axios
+      .put(`${mockApiUrl}/${userData.id}`, userData)
+      .then(() => userData.curseCount);
+  });
+}
+
+function getUserCurseCount(userId) {
+  return axios
+    .get(`${mockApiUrl}?userId=${userId}`)
+    .then((response) => response.data[0].curseCount);
+}
+
+// function getTotalCurseCount() {
+//   return axios.get(mockApiUrl).then((response) => {
+//     const users = response.data;
+//     return users.reduce((total, user) => total + user.curseCount, 0);
+//   });
+// }
