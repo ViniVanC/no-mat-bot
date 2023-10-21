@@ -5,6 +5,7 @@
   "author": "ViniVanC",
   "license": "MIT",
   "dependencies": {
+    "axios": "^1.5.1",
     "json-db": "^0.0.2",
     "mongoose": "^7.6.3",
     "node-json-db": "^2.3.0",
