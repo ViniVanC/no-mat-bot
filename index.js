@@ -146,7 +146,6 @@ function getUserCurseCount(userId) {
     .then((response) => response.data[0].curseCount);
 }
 
-const PORT = process.env.PORT; // Змініть порт на інший, якщо потрібно
-app.listen(PORT, () => {
-  console.log(`Сервер працює на порті ${PORT}`);
+app.listen(process.env.PORT || 3000, () => {
+  console.log("Сервер запущено!");
 });
