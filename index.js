@@ -6,6 +6,8 @@ const mockApiUrl = "https://65338d61d80bd20280f69256.mockapi.io/users"; // Вс�
 
 const bot = new TelegramBot(token, { polling: true });
 
+bot.setWebHook(`https://no-mat-bot.vercel.app//api/webhook`);
+
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.from.id; // Отримання ідентифікатора користувача (user ID)
   const username = msg.from.username; // Отримання тегу користувача (username)
