@@ -1,23 +1,10 @@
 const TelegramBot = require("node-telegram-bot-api");
 const axios = require("axios");
-const express = require("express");
-const bodyParser = require("body-parser");
 
 const token = "6362622832:AAHscQAoWavxQR2fN098Piaolsyj6B-hYQQ";
 const mockApiUrl = "https://65338d61d80bd20280f69256.mockapi.io/users"; // Вставте URL свого MockAPI
 
-const bot = new TelegramBot(token);
-
-const app = express();
-app.use(bodyParser.json());
-
-app.post(`/api/webhook`, (req, res) => {
-  const data = req.body;
-  bot.processUpdate(data);
-  res.sendStatus(200);
-});
-
-bot.setWebHook(`https://no-mat-bot.vercel.app/api/webhook`);
+const bot = new TelegramBot(token, { polling: true });
 
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.from.id; // Отримання ідентифікатора користувача (user ID)
@@ -69,7 +56,7 @@ bot.onText(/\/get_curse_count/, (msg) => {
   const chatId = msg.chat.id;
 
   // Відправляємо початкове повідомлення "Почекайте..."
-  // bot.sendMessage(chatId, "Почекайте, поки прийде відповідь від сервера...");
+  bot.sendMessage(chatId, "Почекайте, поки прийде відповідь від сервера...");
 
   // Отримання лічильника матюків користувача з MockAPI за `userId`
   getUserCurseCount(chatId)
@@ -85,7 +72,7 @@ bot.onText(/\/get_all_users_curse_count/, (msg) => {
   const chatId = msg.chat.id;
 
   // Відправляємо початкове повідомлення "Почекайте..."
-  // bot.sendMessage(chatId, "Почекайте, поки прийде відповідь від сервера...");
+  bot.sendMessage(chatId, "Почекайте, поки прийде відповідь від сервера...");
 
   // Отримання кількості матюків усіх користувачів з MockAPI
   getAllUsersCurseCount()
@@ -146,6 +133,9 @@ function getUserCurseCount(userId) {
     .then((response) => response.data[0].curseCount);
 }
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log("Сервер запущено!");
-});
+// function getTotalCurseCount() {
+//   return axios.get(mockApiUrl).then((response) => {
+//     const users = response.data;
+//     return users.reduce((total, user) => total + user.curseCount, 0);
+//   });
+// }
